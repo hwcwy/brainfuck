@@ -132,7 +132,7 @@ fn repl_mode(runtime_memory: &mut Memory, io: &mut IO, verbose: &mut bool) -> Re
         }
 
         //EOF
-        if buffer.as_bytes() == &[] {
+        if buffer.as_bytes() == [] {
             println!()
         }
 

@@ -87,6 +87,7 @@ impl IO {
             OutputMode::Individually => print!("\nInput:"),
             OutputMode::Bulk => print!("Input:"),
         }
+
         match io::stdout().flush() {
             Ok(_) => {}
             Err(e) => return Err(MyError::Io(e)),
@@ -192,7 +193,7 @@ impl Memory {
 fn raw_code_to_token_vec(raw_code: &str) -> Result<Vec<Token>, MyError> {
     let mut vec = Vec::new();
     let mut stack = Vec::new();
-    let chars = raw_code.chars().into_iter().enumerate();
+    let chars = raw_code.chars().enumerate();
     for (i, char) in chars {
         match char {
             '>' => {
