@@ -4,6 +4,7 @@ use crate::Token;
 use std::{env::Args, fs};
 
 static HELP: &str = "Usage:
+
 [code]              Use the last argument as the code
 -f [path]           Read code from a file
 --REPL | --repl     Start in REPL mode
@@ -93,7 +94,8 @@ impl Config {
 
                 _ => {
                     if arg.starts_with('-') {
-                        println!("{HELP}")
+                        println!("Unknown argument \"{arg}\"\n{HELP}");
+                        std::process::exit(0);
                     }
                     if config.raw_code.is_empty() {
                         config.raw_code = arg;
