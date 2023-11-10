@@ -259,31 +259,40 @@ fn input_to_u32(mut s: String) -> Result<u32, MyError> {
         };
     }
 
-    if s.as_bytes().ends_with(&[13, 10]) {
-        // Windows
-        match s.chars().count() {
-            3 => {
-                let c = s.chars().next().unwrap();
-                Ok(c as u32)
+    match s.as_bytes() {
+        x if x.ends_with(&[13, 10]) => {
+            // Windows
+            match s.chars().count() {
+                3 => {
+                    let c = s.chars().next().unwrap();
+                    Ok(c as u32)
+                }
+                2 => Ok('\n' as u32),
+                _ => Err(MyError::Custom(
+                    "The length of the input string is greater than 1, unable to parse into char"
+                        .to_string(),
+                )),
             }
-            2 => Ok('\n' as u32),
-            _ => Err(MyError::Custom(
-                "The length of the input string is greater than 1, unable to parse into char"
-                    .to_string(),
-            )),
         }
-    } else {
-        // Unix & Unix like
-        match s.chars().count() {
-            2 => {
-                let c = s.chars().next().unwrap();
-                Ok(c as u32)
+
+        x if x.ends_with(&[10]) => {
+            // Unix & Unix like
+            match s.chars().count() {
+                2 => {
+                    let c = s.chars().next().unwrap();
+                    Ok(c as u32)
+                }
+                1 => Ok('\n' as u32),
+                _ => Err(MyError::Custom(
+                    "The length of the input string is greater than 1, unable to parse into char"
+                        .to_string(),
+                )),
             }
-            1 => Ok('\n' as u32),
-            _ => Err(MyError::Custom(
-                "The length of the input string is greater than 1, unable to parse into char"
-                    .to_string(),
-            )),
+        }
+
+        _ => {
+            // EOF
+            Ok(0)
         }
     }
 }
