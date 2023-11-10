@@ -20,6 +20,6 @@ Usage:
 
 ## Show
 
-![mandel](assets\mandel.gif)
+![mandel](assets/mandel.gif)
 
-![input](assets\repl.gif)
+![input](assets/repl.gif)
