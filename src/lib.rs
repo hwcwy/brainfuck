@@ -83,7 +83,7 @@ impl IO {
     }
 
     fn input(&self, runtime_memory: &mut Memory) -> Result<(), MyError> {
-        print!("\nInput:");
+        print!("Input:");
         match io::stdout().flush() {
             Ok(_) => {}
             Err(e) => return Err(MyError::Io(e)),
