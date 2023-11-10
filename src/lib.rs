@@ -186,9 +186,8 @@ impl Memory {
 fn raw_code_to_token_vec(raw_code: &str) -> Result<Vec<Token>, MyError> {
     let mut vec = Vec::new();
     let mut stack = Vec::new();
-    let chars: Vec<char> = raw_code.chars().collect();
-    let mut i = 0;
-    while let Some(char) = chars.get(i) {
+    let chars = raw_code.chars().into_iter().enumerate();
+    for (i, char) in chars {
         match char {
             '>' => {
                 if let Some(Token::PtrIncrease(n)) = vec.last_mut() {
@@ -238,7 +237,6 @@ fn raw_code_to_token_vec(raw_code: &str) -> Result<Vec<Token>, MyError> {
             }
             _ => (),
         }
-        i += 1
     }
 
     if !stack.is_empty() {
