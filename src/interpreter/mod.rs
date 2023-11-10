@@ -45,7 +45,7 @@ impl ExecQueue {
     }
 }
 
-pub fn run(config: Config) -> Result<(), MyError> {
+pub fn run(mut config: Config) -> Result<(), MyError> {
     let mut runtime_memory = Memory::new(config.cell_max);
     let mut io = IO::new(config.output_mode);
 
@@ -53,7 +53,7 @@ pub fn run(config: Config) -> Result<(), MyError> {
         println!("{}", REPL_HELP);
         println!("\n{}", runtime_memory);
         loop {
-            match repl_mode(&mut runtime_memory, &mut io, config.verbose) {
+            match repl_mode(&mut runtime_memory, &mut io, &mut config.verbose) {
                 Ok(_) => break,
                 Err(e) => {
                     println!("Recover from error: {e}");
@@ -117,7 +117,7 @@ fn normal_mode(
     Ok(())
 }
 
-fn repl_mode(runtime_memory: &mut Memory, io: &mut IO, mut verbose: bool) -> Result<(), MyError> {
+fn repl_mode(runtime_memory: &mut Memory, io: &mut IO, verbose: &mut bool) -> Result<(), MyError> {
     io.output_mode = OutputMode::Bulk;
     loop {
         print!("\n> ");
@@ -137,8 +137,8 @@ fn repl_mode(runtime_memory: &mut Memory, io: &mut IO, mut verbose: bool) -> Res
                 runtime_memory.view = vec![0];
                 io.output_buffer.clear();
             }
-            "v" => verbose = true,
-            "uv" => verbose = false,
+            "v" => *verbose = true,
+            "uv" => *verbose = false,
             "?" | "help" => println!("{REPL_HELP}"),
             _ => {}
         }
@@ -146,7 +146,7 @@ fn repl_mode(runtime_memory: &mut Memory, io: &mut IO, mut verbose: bool) -> Res
         let mut exec_queue = ExecQueue::new(raw_code_to_token_vec(&buffer)?);
 
         while let Some(token) = exec_queue.get_token() {
-            if verbose {
+            if *verbose {
                 println!("{} {:?}", runtime_memory, token);
             }
             match token {
