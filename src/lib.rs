@@ -92,7 +92,10 @@ impl IO {
         if let Err(e) = io::stdin().read_line(&mut buffer) {
             return Err(MyError::Io(e));
         }
-        let n = input_to_u32(buffer)?;
+        let (n, eof) = input_to_u32(buffer)?;
+        if eof {
+            println!();
+        }
         if n > runtime_memory.cell_max {
             return Err(MyError::Custom(format!(
                 "Input value {} exceeds the maximum cell value {}",
@@ -249,12 +252,12 @@ fn raw_code_to_token_vec(raw_code: &str) -> Result<Vec<Token>, MyError> {
     Ok(vec)
 }
 
-fn input_to_u32(mut s: String) -> Result<u32, MyError> {
+fn input_to_u32(mut s: String) -> Result<(u32, bool), MyError> {
     let trimed = s.trim();
     if trimed.ends_with("u32") {
         s.truncate(trimed.len() - 3);
         return match s.parse::<u32>() {
-            Ok(value) => Ok(value),
+            Ok(value) => Ok((value, false)),
             Err(e) => Err(MyError::Parse(e)),
         };
     }
@@ -265,9 +268,9 @@ fn input_to_u32(mut s: String) -> Result<u32, MyError> {
             match s.chars().count() {
                 3 => {
                     let c = s.chars().next().unwrap();
-                    Ok(c as u32)
+                    Ok((c as u32, false))
                 }
-                2 => Ok('\n' as u32),
+                2 => Ok(('\n' as u32, false)),
                 _ => Err(MyError::Custom(
                     "The length of the input string is greater than 1, unable to parse into char"
                         .to_string(),
@@ -280,9 +283,9 @@ fn input_to_u32(mut s: String) -> Result<u32, MyError> {
             match s.chars().count() {
                 2 => {
                     let c = s.chars().next().unwrap();
-                    Ok(c as u32)
+                    Ok((c as u32, false))
                 }
-                1 => Ok('\n' as u32),
+                1 => Ok(('\n' as u32, false)),
                 _ => Err(MyError::Custom(
                     "The length of the input string is greater than 1, unable to parse into char"
                         .to_string(),
@@ -292,7 +295,7 @@ fn input_to_u32(mut s: String) -> Result<u32, MyError> {
 
         _ => {
             // EOF
-            Ok(0)
+            Ok((0, true))
         }
     }
 }

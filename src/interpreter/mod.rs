@@ -131,6 +131,11 @@ fn repl_mode(runtime_memory: &mut Memory, io: &mut IO, verbose: &mut bool) -> Re
             return Err(MyError::Io(e));
         }
 
+        //EOF
+        if buffer.as_bytes() == &[] {
+            println!()
+        }
+
         match buffer.trim() {
             "exit" => break,
             "clear" => {
