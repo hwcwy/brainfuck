@@ -6,6 +6,8 @@ use std::io::{self, Write};
 static REPL_HELP: &str = "Commands:
 exit         Exit REPL mode
 clear        Clear memory
+ob           set the output mode to bulk 
+oi           set the output mode to individually
 v            Enable verbose mode
 uv           Disable verbose mode
 ? | help     Print this";
@@ -32,16 +34,13 @@ impl ExecQueue {
         self.ptr = n as usize
     }
 
-    fn get_token(&mut self) -> Option<Token> {
+    fn next_token(&mut self) -> Option<Token> {
         let token = match self.view.get(self.ptr) {
             Some(&t) => t,
             None => return None,
         };
-        Some(token)
-    }
-
-    fn ptr_increase(&mut self) {
         self.ptr += 1;
+        Some(token)
     }
 }
 
@@ -79,17 +78,9 @@ fn normal_mode(
     verbose: bool,
     mut exec_queue: ExecQueue,
 ) -> Result<(), MyError> {
-    while let Some(token) = exec_queue.get_token() {
+    while let Some(token) = exec_queue.next_token() {
         if verbose {
-            match io.output_mode {
-                OutputMode::Individually => {
-                    println!("{} {:?}", runtime_memory, token);
-                    println!("{}", io.buffer_to_string());
-                }
-                OutputMode::Bulk => {
-                    println!("{} {:?}", runtime_memory, token);
-                }
-            }
+            println!("{} {:?}", runtime_memory, token);
         }
         match token {
             Token::PtrIncrease(n) => runtime_memory.ptr_increase(n),
@@ -106,19 +97,20 @@ fn normal_mode(
                     exec_queue.jump_back(n);
                 }
             }
-            Token::Output => io.output(&runtime_memory)?,
-            Token::Input => io.input(&mut runtime_memory)?,
+            Token::Output => io.output(&runtime_memory, verbose)?,
+            Token::Input => io.input(&mut runtime_memory, verbose)?,
         };
-        exec_queue.ptr_increase();
+        if verbose {
+            println!("{}", io.buffer_to_string())
+        }
     }
-    if io.output_mode == OutputMode::Bulk {
+    if !verbose && io.output_mode == OutputMode::Bulk {
         print!("{}", io.buffer_to_string());
     };
     Ok(())
 }
 
 fn repl_mode(runtime_memory: &mut Memory, io: &mut IO, verbose: &mut bool) -> Result<(), MyError> {
-    io.output_mode = OutputMode::Bulk;
     loop {
         print!("\n> ");
         match io::stdout().flush() {
@@ -142,6 +134,8 @@ fn repl_mode(runtime_memory: &mut Memory, io: &mut IO, verbose: &mut bool) -> Re
                 runtime_memory.view = vec![0];
                 io.output_buffer.clear();
             }
+            "ob" => io.output_mode = OutputMode::Bulk,
+            "oi" => io.output_mode = OutputMode::Individually,
             "v" => *verbose = true,
             "uv" => *verbose = false,
             "?" | "help" => println!("{REPL_HELP}"),
@@ -150,7 +144,7 @@ fn repl_mode(runtime_memory: &mut Memory, io: &mut IO, verbose: &mut bool) -> Re
 
         let mut exec_queue = ExecQueue::new(raw_code_to_token_vec(&buffer)?);
 
-        while let Some(token) = exec_queue.get_token() {
+        while let Some(token) = exec_queue.next_token() {
             if *verbose {
                 println!("{} {:?}", runtime_memory, token);
             }
@@ -169,12 +163,16 @@ fn repl_mode(runtime_memory: &mut Memory, io: &mut IO, verbose: &mut bool) -> Re
                         exec_queue.jump_back(n);
                     }
                 }
-                Token::Output => io.output(runtime_memory)?,
-                Token::Input => io.input(runtime_memory)?,
+                Token::Output => io.output(runtime_memory, *verbose)?,
+                Token::Input => io.input(runtime_memory, *verbose)?,
             };
-            exec_queue.ptr_increase();
+            if *verbose {
+                println!("{}", io.buffer_to_string())
+            }
         }
-
+        if !*verbose && io.output_mode == OutputMode::Individually {
+            println!()
+        }
         print!("{}", runtime_memory);
         print!("\n{}", io.buffer_to_string());
     }

@@ -20,6 +20,8 @@ Usage:
 
 ## Show
 
+![cellsize](assets/cellsize.png)
+
 ![mandel](assets/mandel.gif)
 
 ![input](assets/repl.gif)

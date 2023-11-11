@@ -55,7 +55,7 @@ impl IO {
         result
     }
 
-    fn output(&mut self, runtime_memory: &Memory) -> Result<(), MyError> {
+    fn output(&mut self, runtime_memory: &Memory, verbose: bool) -> Result<(), MyError> {
         let n = runtime_memory.output();
         let char = match char::from_u32(n) {
             Some(c) => c,
@@ -66,27 +66,22 @@ impl IO {
                 )))
             }
         };
-        match self.output_mode {
-            OutputMode::Individually => {
-                self.output_buffer.push(n);
-                print!("{}", char);
-                match io::stdout().flush() {
-                    Ok(_) => {}
-                    Err(e) => return Err(MyError::Io(e)),
-                }
+        self.output_buffer.push(n);
+        if !verbose && self.output_mode == OutputMode::Individually {
+            print!("{}", char);
+            match io::stdout().flush() {
+                Ok(_) => {}
+                Err(e) => return Err(MyError::Io(e)),
             }
-            OutputMode::Bulk => {
-                self.output_buffer.push(n);
-            }
-        };
+        }
         Ok(())
     }
 
-    fn input(&self, runtime_memory: &mut Memory) -> Result<(), MyError> {
-        match self.output_mode {
-            OutputMode::Individually => print!("\nInput:"),
-            OutputMode::Bulk => print!("Input:"),
+    fn input(&self, runtime_memory: &mut Memory, verbose: bool) -> Result<(), MyError> {
+        if self.output_mode == OutputMode::Individually && !verbose {
+            println!();
         }
+        print!("Input:");
 
         match io::stdout().flush() {
             Ok(_) => {}
@@ -107,7 +102,7 @@ impl IO {
             )));
         }
         runtime_memory.input(n);
-        if self.output_mode == OutputMode::Individually {
+        if !verbose && self.output_mode == OutputMode::Individually {
             print!("{}", self.buffer_to_string());
         };
         Ok(())
