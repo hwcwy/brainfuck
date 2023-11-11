@@ -83,6 +83,9 @@ impl IO {
     }
 
     fn input(&self, runtime_memory: &mut Memory) -> Result<(), MyError> {
+        if self.output_mode == OutputMode::Individually {
+            print!("\r{}", self.buffer_to_string());
+        };
         match self.output_mode {
             OutputMode::Individually => print!("\nInput:"),
             OutputMode::Bulk => print!("Input:"),
@@ -107,9 +110,6 @@ impl IO {
             )));
         }
         runtime_memory.input(n);
-        if self.output_mode == OutputMode::Individually {
-            print!("{}", self.buffer_to_string());
-        };
         Ok(())
     }
 }

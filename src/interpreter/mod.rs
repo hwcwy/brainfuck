@@ -114,7 +114,6 @@ fn normal_mode(
 }
 
 fn repl_mode(runtime_memory: &mut Memory, io: &mut IO, verbose: &mut bool) -> Result<(), MyError> {
-    io.output_mode = OutputMode::Bulk;
     loop {
         print!("\n> ");
         match io::stdout().flush() {
@@ -148,7 +147,15 @@ fn repl_mode(runtime_memory: &mut Memory, io: &mut IO, verbose: &mut bool) -> Re
 
         while let Some(token) = exec_queue.next_token() {
             if *verbose {
-                println!("{} {:?}", runtime_memory, token);
+                match io.output_mode {
+                    OutputMode::Individually => {
+                        println!("\n{} {:?}", runtime_memory, token);
+                        print!("{}", io.buffer_to_string());
+                    }
+                    OutputMode::Bulk => {
+                        println!("{} {:?}", runtime_memory, token);
+                    }
+                }
             }
             match token {
                 Token::PtrIncrease(n) => runtime_memory.ptr_increase(n),
@@ -169,7 +176,9 @@ fn repl_mode(runtime_memory: &mut Memory, io: &mut IO, verbose: &mut bool) -> Re
                 Token::Input => io.input(runtime_memory)?,
             };
         }
-
+        if *verbose && io.output_mode == OutputMode::Individually {
+            println!()
+        }
         print!("{}", runtime_memory);
         print!("\n{}", io.buffer_to_string());
     }
