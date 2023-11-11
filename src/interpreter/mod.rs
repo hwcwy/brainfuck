@@ -32,16 +32,13 @@ impl ExecQueue {
         self.ptr = n as usize
     }
 
-    fn get_token(&mut self) -> Option<Token> {
+    fn next_token(&mut self) -> Option<Token> {
         let token = match self.view.get(self.ptr) {
             Some(&t) => t,
             None => return None,
         };
-        Some(token)
-    }
-
-    fn ptr_increase(&mut self) {
         self.ptr += 1;
+        Some(token)
     }
 }
 
@@ -79,12 +76,12 @@ fn normal_mode(
     verbose: bool,
     mut exec_queue: ExecQueue,
 ) -> Result<(), MyError> {
-    while let Some(token) = exec_queue.get_token() {
+    while let Some(token) = exec_queue.next_token() {
         if verbose {
             match io.output_mode {
                 OutputMode::Individually => {
-                    println!("{} {:?}", runtime_memory, token);
-                    println!("{}", io.buffer_to_string());
+                    println!("\n{} {:?}", runtime_memory, token);
+                    print!("{}", io.buffer_to_string());
                 }
                 OutputMode::Bulk => {
                     println!("{} {:?}", runtime_memory, token);
@@ -109,7 +106,6 @@ fn normal_mode(
             Token::Output => io.output(&runtime_memory)?,
             Token::Input => io.input(&mut runtime_memory)?,
         };
-        exec_queue.ptr_increase();
     }
     if io.output_mode == OutputMode::Bulk {
         print!("{}", io.buffer_to_string());
@@ -150,7 +146,7 @@ fn repl_mode(runtime_memory: &mut Memory, io: &mut IO, verbose: &mut bool) -> Re
 
         let mut exec_queue = ExecQueue::new(raw_code_to_token_vec(&buffer)?);
 
-        while let Some(token) = exec_queue.get_token() {
+        while let Some(token) = exec_queue.next_token() {
             if *verbose {
                 println!("{} {:?}", runtime_memory, token);
             }
@@ -172,7 +168,6 @@ fn repl_mode(runtime_memory: &mut Memory, io: &mut IO, verbose: &mut bool) -> Re
                 Token::Output => io.output(runtime_memory)?,
                 Token::Input => io.input(runtime_memory)?,
             };
-            exec_queue.ptr_increase();
         }
 
         print!("{}", runtime_memory);
