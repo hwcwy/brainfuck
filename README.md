@@ -22,4 +22,4 @@ Usage:
 
 ![mandel](assets/mandel.gif)
 
-![input](assets/REPL.gif)
+![input](assets/repl.gif)
