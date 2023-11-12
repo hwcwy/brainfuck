@@ -16,7 +16,7 @@ pub fn run(mut config: Config) -> Result<(), MyError> {
     Ok(())
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Token {
     PtrIncrease(u32),
     PtrDecreate(u32),
@@ -55,7 +55,7 @@ impl IO {
         result
     }
 
-    fn output(&mut self, runtime_memory: &Memory) -> Result<(), MyError> {
+    fn output(&mut self, runtime_memory: &Memory) -> Result<char, MyError> {
         let n = runtime_memory.output();
         let char = match char::from_u32(n) {
             Some(c) => c,
@@ -66,30 +66,12 @@ impl IO {
                 )))
             }
         };
-        match self.output_mode {
-            OutputMode::Individually => {
-                self.output_buffer.push(n);
-                print!("{}", char);
-                match io::stdout().flush() {
-                    Ok(_) => {}
-                    Err(e) => return Err(MyError::Io(e)),
-                }
-            }
-            OutputMode::Bulk => {
-                self.output_buffer.push(n);
-            }
-        };
-        Ok(())
+        self.output_buffer.push(n);
+        Ok(char)
     }
 
     fn input(&self, runtime_memory: &mut Memory) -> Result<(), MyError> {
-        if self.output_mode == OutputMode::Individually {
-            print!("\r{}", self.buffer_to_string());
-        };
-        match self.output_mode {
-            OutputMode::Individually => print!("\nInput:"),
-            OutputMode::Bulk => print!("Input:"),
-        }
+        print!("Input:");
 
         match io::stdout().flush() {
             Ok(_) => {}

@@ -48,14 +48,16 @@ pub fn run(mut config: Config) -> Result<(), MyError> {
 
     if config.repl_mode {
         println!("{}", REPL_HELP);
-        println!("\n{}", runtime_memory);
+        println!();
+        println!("{}", runtime_memory);
+        println!();
         loop {
             match repl_mode(&mut runtime_memory, &mut io, &mut config.verbose) {
                 Ok(_) => break,
                 Err(e) => {
                     println!("Recover from error: {e}");
-                    print!("{}", runtime_memory);
-                    print!("\n{}", io.buffer_to_string());
+                    println!("{}", runtime_memory);
+                    println!("{}", io.buffer_to_string());
                 }
             };
         }
@@ -76,17 +78,10 @@ fn normal_mode(
     verbose: bool,
     mut exec_queue: ExecQueue,
 ) -> Result<(), MyError> {
+    let should_print_individually = !verbose && io.output_mode == OutputMode::Individually;
     while let Some(token) = exec_queue.next_token() {
         if verbose {
-            match io.output_mode {
-                OutputMode::Individually => {
-                    println!("\n{} {:?}", runtime_memory, token);
-                    print!("{}", io.buffer_to_string());
-                }
-                OutputMode::Bulk => {
-                    println!("{} {:?}", runtime_memory, token);
-                }
-            }
+            print!("{} ", runtime_memory);
         }
         match token {
             Token::PtrIncrease(n) => runtime_memory.ptr_increase(n),
@@ -103,11 +98,35 @@ fn normal_mode(
                     exec_queue.jump_back(n);
                 }
             }
-            Token::Output => io.output(&runtime_memory)?,
-            Token::Input => io.input(&mut runtime_memory)?,
+            Token::Output => {
+                let char = io.output(&runtime_memory)?;
+                if should_print_individually {
+                    print!("{}", char);
+                    match io::stdout().flush() {
+                        Ok(_) => {}
+                        Err(e) => return Err(MyError::Io(e)),
+                    }
+                }
+            }
+            Token::Input => {
+                if should_print_individually {
+                    let buffer = io.buffer_to_string();
+                    if !buffer.is_empty() && !buffer.ends_with('\n') {
+                        println!("\r{}", buffer)
+                    }
+                }
+
+                io.input(&mut runtime_memory)?
+            }
         };
+        if verbose {
+            if token != Token::Input {
+                println!("{:?}", token);
+            }
+            println!("{}", io.buffer_to_string());
+        }
     }
-    if io.output_mode == OutputMode::Bulk {
+    if !verbose && io.output_mode == OutputMode::Bulk {
         print!("{}", io.buffer_to_string());
     };
     Ok(())
@@ -115,7 +134,7 @@ fn normal_mode(
 
 fn repl_mode(runtime_memory: &mut Memory, io: &mut IO, verbose: &mut bool) -> Result<(), MyError> {
     loop {
-        print!("\n> ");
+        print!("> ");
         match io::stdout().flush() {
             Ok(_) => {}
             Err(e) => return Err(MyError::Io(e)),
@@ -144,18 +163,11 @@ fn repl_mode(runtime_memory: &mut Memory, io: &mut IO, verbose: &mut bool) -> Re
         }
 
         let mut exec_queue = ExecQueue::new(raw_code_to_token_vec(&buffer)?);
+        let should_print_individually = !*verbose && io.output_mode == OutputMode::Individually;
 
         while let Some(token) = exec_queue.next_token() {
             if *verbose {
-                match io.output_mode {
-                    OutputMode::Individually => {
-                        println!("\n{} {:?}", runtime_memory, token);
-                        print!("{}", io.buffer_to_string());
-                    }
-                    OutputMode::Bulk => {
-                        println!("{} {:?}", runtime_memory, token);
-                    }
-                }
+                print!("{} ", runtime_memory);
             }
             match token {
                 Token::PtrIncrease(n) => runtime_memory.ptr_increase(n),
@@ -172,15 +184,36 @@ fn repl_mode(runtime_memory: &mut Memory, io: &mut IO, verbose: &mut bool) -> Re
                         exec_queue.jump_back(n);
                     }
                 }
-                Token::Output => io.output(runtime_memory)?,
-                Token::Input => io.input(runtime_memory)?,
+                Token::Output => {
+                    let char = io.output(runtime_memory)?;
+                    if should_print_individually {
+                        print!("{}", char);
+                        match io::stdout().flush() {
+                            Ok(_) => {}
+                            Err(e) => return Err(MyError::Io(e)),
+                        }
+                    }
+                }
+                Token::Input => {
+                    if should_print_individually {
+                        let buffer = io.buffer_to_string();
+                        if !buffer.is_empty() && !buffer.ends_with('\n') {
+                            println!("\r{}", buffer)
+                        }
+                    }
+
+                    io.input(runtime_memory)?
+                }
             };
+            if *verbose {
+                if token != Token::Input {
+                    println!("{:?}", token);
+                }
+                println!("{}", io.buffer_to_string());
+            }
         }
-        if *verbose && io.output_mode == OutputMode::Individually {
-            println!()
-        }
-        print!("{}", runtime_memory);
-        print!("\n{}", io.buffer_to_string());
+        println!("\r{}", runtime_memory);
+        println!("{}", io.buffer_to_string());
     }
     Ok(())
 }
