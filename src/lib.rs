@@ -210,13 +210,13 @@ fn raw_code_to_token_vec(raw_code: &str) -> Result<Vec<Token>, MyError> {
             ',' => vec.push(Token::Input),
             '[' => {
                 vec.push(Token::JumpForward(0));
-                stack.push(vec.len() as u32 - 1);
+                stack.push(vec.len() as u32);
             }
             ']' => {
                 if let Some(start) = stack.pop() {
                     vec.push(Token::JumpBack(start));
-                    *vec.get_mut(start as usize).unwrap() =
-                        Token::JumpForward(vec.len() as u32 - 1);
+                    *vec.get_mut(start as usize - 1).unwrap() =
+                        Token::JumpForward(vec.len() as u32);
                 } else {
                     return Err(MyError::Custom(format!(
                         "Unmatched JumpBack found at [{}]",
