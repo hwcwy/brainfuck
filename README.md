@@ -23,3 +23,5 @@ Usage:
 ![mandel](assets/mandel.gif)
 
 ![input](assets/repl.gif)
+
+![uint-8](assets/uint-8.png)
