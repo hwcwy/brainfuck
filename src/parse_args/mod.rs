@@ -5,7 +5,7 @@ use std::{env::Args, fs};
 
 static HELP: &str = "Usage:
 
-[code]              Use the last argument as the code
+[code]              Use an argument as the code
 -f [path]           Read code from a file
 --REPL | --repl     Start in REPL mode
 --bulk              Bulk output mode
@@ -46,7 +46,7 @@ impl Config {
     pub fn from(args: Args) -> Result<Config, MyError> {
         let mut config = Config::new();
         let args: Vec<String> = args.skip(1).collect();
-        let mut args_iter = args.into_iter().peekable();
+        let mut args_iter = args.into_iter();
 
         while let Some(arg) = args_iter.next() {
             match arg.as_str() {
@@ -55,7 +55,7 @@ impl Config {
                     std::process::exit(0);
                 }
                 "-f" => {
-                    if let Some(file_path) = args_iter.peek() {
+                    if let Some(file_path) = args_iter.next() {
                         match fs::read_to_string(file_path) {
                             Ok(code) => {
                                 if code.is_empty() {
@@ -72,7 +72,7 @@ impl Config {
                 "-v" | "--verbose" => config.verbose = true,
                 "--bulk" => config.output_mode = OutputMode::Bulk,
                 "--cell" => {
-                    if let Some(cell_size_type) = args_iter.peek() {
+                    if let Some(cell_size_type) = args_iter.next() {
                         match cell_size_type.as_str() {
                             "u8" => config.cell_max = 255,
                             "u16" => config.cell_max = 65535,
@@ -94,7 +94,8 @@ impl Config {
 
                 _ => {
                     if arg.starts_with('-') {
-                        println!("Unknown argument \"{arg}\"\n{HELP}");
+                        println!("Unknown argument \"{arg}\"");
+                        println!("{HELP}");
                         std::process::exit(0);
                     }
                     if config.raw_code.is_empty() {
