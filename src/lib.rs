@@ -1,11 +1,12 @@
-pub mod errors;
+mod errors;
 mod interpreter;
-pub mod parse_args;
+mod parse_args;
 
-use errors::MyError;
-use parse_args::Config;
 use std::fmt;
 use std::io::{self, Write};
+
+pub use errors::MyError;
+pub use parse_args::Config;
 
 pub fn run(mut config: Config) -> Result<(), MyError> {
     config.token_vec = raw_code_to_token_vec(&config.raw_code)?;

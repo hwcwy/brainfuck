@@ -1,6 +1,4 @@
-use brainfuck::errors::MyError;
-use brainfuck::parse_args::Config;
-use brainfuck::run;
+use brainfuck_hcy::{run, Config, MyError};
 use std::env::args;
 
 fn main() {
