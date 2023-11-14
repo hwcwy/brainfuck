@@ -1,13 +1,12 @@
 [package]
 name = "brainfuck-hcy"
-version = "1.0.1"
+version = "1.0.2"
 edition = "2021"
 authors = ["hcy <hcy347244312@gmail.com>"]
 homepage = "https://github.com/hwcwy/brainfuck"
 repository = "https://github.com/hwcwy/brainfuck"
 description = "My First Rust Project : A Brainfuck Interpreter, Comprehensive and Easy to Read"
 license = "MIT"
-license-file = "LICENSE"
 readme = "README.md"
 keywords = ["brainfuck", "interpreter", "beginner-project"]
 
