@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "brainfuck"
+name = "brainfuck-hcy"
 version = "1.0.1"
