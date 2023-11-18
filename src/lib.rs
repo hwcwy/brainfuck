@@ -176,8 +176,12 @@ impl Memory {
 fn raw_code_to_token_vec(raw_code: &str) -> Result<Vec<Token>, MyError> {
     let mut vec = Vec::new();
     let mut stack = Vec::new();
-    let chars = raw_code.chars().enumerate();
-    for (i, char) in chars {
+    let chars = raw_code.chars();
+
+    let mut line: u32 = 1;
+    let mut col: u32 = 0;
+    for char in chars {
+        col += 1;
         match char {
             '>' => {
                 if let Some(Token::PtrIncrease(n)) = vec.last_mut() {
@@ -219,21 +223,27 @@ fn raw_code_to_token_vec(raw_code: &str) -> Result<Vec<Token>, MyError> {
                     *vec.get_mut(start as usize - 1).unwrap() =
                         Token::JumpForward(vec.len() as u32);
                 } else {
-                    return Err(MyError::Custom(format!(
-                        "Unmatched JumpBack found at [{}]",
-                        i
-                    )));
+                    return Err(MyError::Compile(errors::CompileError {
+                        line,
+                        col,
+                        kind: errors::CompileErrorKind::UnexpectedRightBracket,
+                    }));
                 }
+            }
+            '\n' => {
+                line += 1;
+                col = 0;
             }
             _ => (),
         }
     }
 
     if !stack.is_empty() {
-        return Err(MyError::Custom(format!(
-            "Unmatched JumpForward found at {:?}",
-            stack
-        )));
+        return Err(MyError::Compile(errors::CompileError {
+            line,
+            col,
+            kind: errors::CompileErrorKind::UnclosedLeftBracket,
+        }));
     }
 
     Ok(vec)

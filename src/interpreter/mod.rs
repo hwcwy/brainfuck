@@ -144,6 +144,7 @@ fn repl_mode(runtime_memory: &mut Memory, io: &mut IO, verbose: &mut bool) -> Re
         if let Err(e) = io::stdin().read_line(&mut buffer) {
             return Err(MyError::Io(e));
         }
+        let buffer = buffer.trim_end();
 
         //EOF
         if buffer.as_bytes().is_empty() {
@@ -162,7 +163,7 @@ fn repl_mode(runtime_memory: &mut Memory, io: &mut IO, verbose: &mut bool) -> Re
             _ => {}
         }
 
-        let mut exec_queue = ExecQueue::new(raw_code_to_token_vec(&buffer)?);
+        let mut exec_queue = ExecQueue::new(raw_code_to_token_vec(buffer)?);
         let should_print_individually = !*verbose && io.output_mode == OutputMode::Individually;
 
         while let Some(token) = exec_queue.next_token() {
