@@ -20,7 +20,7 @@ pub fn run(mut config: Config) -> Result<(), MyError> {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Token {
     PtrIncrease(u32),
-    PtrDecreate(u32),
+    PtrDecrease(u32),
     DataIncrease(u32),
     DataDecrease(u32),
     JumpForward(u32),
@@ -191,10 +191,10 @@ fn raw_code_to_token_vec(raw_code: &str) -> Result<Vec<Token>, MyError> {
                 }
             }
             '<' => {
-                if let Some(Token::PtrDecreate(n)) = vec.last_mut() {
+                if let Some(Token::PtrDecrease(n)) = vec.last_mut() {
                     *n += 1;
                 } else {
-                    vec.push(Token::PtrDecreate(1));
+                    vec.push(Token::PtrDecrease(1));
                 }
             }
             '+' => {
@@ -301,7 +301,7 @@ fn show_ir(token_vec: Vec<Token>) {
     for token in token_vec {
         match token {
             Token::PtrIncrease(n) => println!("PtrIncrease  {}", n),
-            Token::PtrDecreate(n) => println!("PtrDecreate  {}", n),
+            Token::PtrDecrease(n) => println!("PtrDecreate  {}", n),
             Token::DataIncrease(n) => println!("DataIncrease {}", n),
             Token::DataDecrease(n) => println!("DataDecrease {}", n),
             Token::JumpForward(n) => println!("JumpForward  {}", n),

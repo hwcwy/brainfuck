@@ -85,7 +85,7 @@ fn normal_mode(
         }
         match token {
             Token::PtrIncrease(n) => runtime_memory.ptr_increase(n),
-            Token::PtrDecreate(n) => runtime_memory.ptr_decrease(n)?,
+            Token::PtrDecrease(n) => runtime_memory.ptr_decrease(n)?,
             Token::DataIncrease(n) => runtime_memory.data_increase(n),
             Token::DataDecrease(n) => runtime_memory.data_decrease(n),
             Token::JumpForward(n) => {
@@ -172,7 +172,7 @@ fn repl_mode(runtime_memory: &mut Memory, io: &mut IO, verbose: &mut bool) -> Re
             }
             match token {
                 Token::PtrIncrease(n) => runtime_memory.ptr_increase(n),
-                Token::PtrDecreate(n) => runtime_memory.ptr_decrease(n)?,
+                Token::PtrDecrease(n) => runtime_memory.ptr_decrease(n)?,
                 Token::DataIncrease(n) => runtime_memory.data_increase(n),
                 Token::DataDecrease(n) => runtime_memory.data_decrease(n),
                 Token::JumpForward(n) => {
