@@ -189,9 +189,8 @@ fn repl_mode(runtime_memory: &mut Memory, io: &mut IO, verbose: &mut bool) -> Re
                     let char = io.output(runtime_memory)?;
                     if should_print_individually {
                         print!("{}", char);
-                        match io::stdout().flush() {
-                            Ok(_) => {}
-                            Err(e) => return Err(MyError::Io(e)),
+                        if let Err(e) = io::stdout().flush() {
+                            return Err(MyError::Io(e));
                         }
                     }
                 }

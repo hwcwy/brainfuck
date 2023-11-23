@@ -74,9 +74,8 @@ impl IO {
     fn input(&self, runtime_memory: &mut Memory) -> Result<(), MyError> {
         print!("Input:");
 
-        match io::stdout().flush() {
-            Ok(_) => {}
-            Err(e) => return Err(MyError::Io(e)),
+        if let Err(e) = io::stdout().flush() {
+            return Err(MyError::Io(e));
         }
         let mut buffer = String::new();
         if let Err(e) = io::stdin().read_line(&mut buffer) {
