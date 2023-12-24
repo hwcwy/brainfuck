@@ -25,4 +25,6 @@ Usage:
 
 ![input](assets/repl.gif)
 
+![cell](assets/cell.png)
+
 ![uint-8](assets/uint-8.png)
