@@ -55,7 +55,7 @@ pub fn run(mut config: Config) -> Result<(), MyError> {
             match repl_mode(&mut runtime_memory, &mut io, &mut config.verbose) {
                 Ok(_) => break,
                 Err(e) => {
-                    println!("Recover from error: {e}");
+                    println!("Recovering from error: {e}");
                     println!("{}", runtime_memory);
                     println!("{}", io.buffer_to_string());
                 }
