@@ -41,10 +41,10 @@ struct IO {
 }
 
 impl IO {
-    fn new(output_mode: OutputMode, verbose: bool) -> Self {
+    fn new(output_mode: OutputMode, with_buffer: bool) -> Self {
         IO {
             output_mode,
-            output_buffer: if verbose { Some(Vec::new()) } else { None },
+            output_buffer: if with_buffer { Some(Vec::new()) } else { None },
         }
     }
 

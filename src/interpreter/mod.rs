@@ -44,7 +44,8 @@ impl ExecQueue {
 
 pub fn run(mut config: Config) -> Result<(), MyError> {
     let mut runtime_memory = Memory::new(config.cell_max);
-    let mut io = IO::new(config.output_mode, config.verbose);
+    let with_buffer = config.output_mode == OutputMode::Bulk || config.verbose;
+    let mut io = IO::new(config.output_mode, with_buffer);
 
     if config.repl_mode {
         println!("{}", REPL_HELP);
