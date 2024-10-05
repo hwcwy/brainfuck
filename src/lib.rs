@@ -37,20 +37,20 @@ pub enum OutputMode {
 
 struct IO {
     output_mode: OutputMode,
-    output_buffer: Vec<u32>,
+    output_buffer: Option<Vec<u32>>,
 }
 
 impl IO {
-    fn new(output_mode: OutputMode) -> Self {
+    fn new(output_mode: OutputMode, verbose: bool) -> Self {
         IO {
             output_mode,
-            output_buffer: Vec::new(),
+            output_buffer: if verbose { Some(Vec::new()) } else { None },
         }
     }
 
     fn buffer_to_string(&self) -> String {
         let mut result = String::new();
-        for &n in self.output_buffer.iter() {
+        for &n in self.output_buffer.as_ref().unwrap().iter() {
             result.push(char::from_u32(n).unwrap());
         }
         result
@@ -67,7 +67,9 @@ impl IO {
                 )))
             }
         };
-        self.output_buffer.push(n);
+        if let Some(output_buffer) = &mut self.output_buffer {
+            output_buffer.push(n);
+        }
         Ok(char)
     }
 

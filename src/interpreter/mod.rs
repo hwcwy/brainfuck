@@ -44,7 +44,7 @@ impl ExecQueue {
 
 pub fn run(mut config: Config) -> Result<(), MyError> {
     let mut runtime_memory = Memory::new(config.cell_max);
-    let mut io = IO::new(config.output_mode);
+    let mut io = IO::new(config.output_mode, config.verbose);
 
     if config.repl_mode {
         println!("{}", REPL_HELP);
@@ -102,22 +102,12 @@ fn normal_mode(
                 let char = io.output(&runtime_memory)?;
                 if should_print_individually {
                     print!("{}", char);
-                    match io::stdout().flush() {
-                        Ok(_) => {}
-                        Err(e) => return Err(MyError::Io(e)),
+                    if let Err(e) = io::stdout().flush() {
+                        return Err(MyError::Io(e));
                     }
                 }
             }
-            Token::Input => {
-                if should_print_individually {
-                    let buffer = io.buffer_to_string();
-                    if !buffer.is_empty() && !buffer.ends_with('\n') {
-                        println!("\r{}", buffer)
-                    }
-                }
-
-                io.input(&mut runtime_memory)?
-            }
+            Token::Input => io.input(&mut runtime_memory)?,
         };
         if verbose {
             if token != Token::Input {
@@ -133,11 +123,11 @@ fn normal_mode(
 }
 
 fn repl_mode(runtime_memory: &mut Memory, io: &mut IO, verbose: &mut bool) -> Result<(), MyError> {
+    io.output_buffer = Some(Vec::new());
     loop {
         print!("> ");
-        match io::stdout().flush() {
-            Ok(_) => {}
-            Err(e) => return Err(MyError::Io(e)),
+        if let Err(e) = io::stdout().flush() {
+            return Err(MyError::Io(e));
         }
 
         let mut buffer = String::new();
@@ -155,7 +145,7 @@ fn repl_mode(runtime_memory: &mut Memory, io: &mut IO, verbose: &mut bool) -> Re
             "exit" => break,
             "clear" => {
                 runtime_memory.view = vec![0];
-                io.output_buffer.clear();
+                io.output_buffer = Some(Vec::new());
             }
             "v" => *verbose = true,
             "uv" => *verbose = false,
@@ -194,16 +184,7 @@ fn repl_mode(runtime_memory: &mut Memory, io: &mut IO, verbose: &mut bool) -> Re
                         }
                     }
                 }
-                Token::Input => {
-                    if should_print_individually {
-                        let buffer = io.buffer_to_string();
-                        if !buffer.is_empty() && !buffer.ends_with('\n') {
-                            println!("\r{}", buffer)
-                        }
-                    }
-
-                    io.input(runtime_memory)?
-                }
+                Token::Input => io.input(runtime_memory)?,
             };
             if *verbose {
                 if token != Token::Input {
