@@ -251,9 +251,9 @@ fn raw_code_to_token_vec(raw_code: &str) -> Result<Vec<Token>, MyError> {
 }
 
 fn input_to_u32(mut s: String) -> Result<(u32, bool), MyError> {
-    let trimed = s.trim();
-    if trimed.ends_with("u32") {
-        s.truncate(trimed.len() - 3);
+    let trimmed = s.trim();
+    if trimmed.ends_with("u32") {
+        s.truncate(trimmed.len() - 3);
         return match s.parse::<u32>() {
             Ok(value) => Ok((value, false)),
             Err(e) => Err(MyError::Parse(e)),
@@ -302,7 +302,7 @@ fn show_ir(token_vec: Vec<Token>) {
     for token in token_vec {
         match token {
             Token::PtrIncrease(n) => println!("PtrIncrease  {}", n),
-            Token::PtrDecrease(n) => println!("PtrDecreate  {}", n),
+            Token::PtrDecrease(n) => println!("PtrDecrease  {}", n),
             Token::DataIncrease(n) => println!("DataIncrease {}", n),
             Token::DataDecrease(n) => println!("DataDecrease {}", n),
             Token::JumpForward(n) => println!("JumpForward  {}", n),
